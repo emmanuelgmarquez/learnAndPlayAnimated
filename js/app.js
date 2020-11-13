@@ -1,3 +1,5 @@
+// Page Transition Animations //
+
 const initialPageAnimation = () => {
     let timeline = gsap.timeline()
 
@@ -138,7 +140,6 @@ const loadingLeave = () => {
         y: "100%"
     }, {
         y: 0,
-        duration: 2
     })
 }
 const loadingEnter = () => {
@@ -173,7 +174,7 @@ const galleryEnter = () => {
         }
     )
 }
-galleryEnter();
+
 barba.init({
     sync: true,
     transitions: [{
@@ -193,5 +194,81 @@ barba.init({
         async once(data) {
             initialPageAnimation();
         }
-    }]
+    },
+    {
+        name: 'gallery-transition',
+        from: {
+            namespace: ['home', 'about']
+        },
+        to: {
+            namespace: ['gallery']
+        },
+        async leave(data) {
+            const done = this.async();
+            console.log('Leaving Page Animation');
+            loadingLeave();
+            await delay(1500);
+            done();
+        },
+        async enter(data) {
+            loadingEnter();
+            galleryEnter();
+            console.log('Entering Page Animation');
+        },
+        async once(data) {
+            initialPageAnimation();
+        }
+    }],
+    views: [
+    //     {
+    //     namespace: 'index',
+    //     beforeLeave(data) {
+    //       // do something before leaving the current `index` namespace
+    //     }
+    //   }, 
+    {
+        namespace: 'about',
+        afterEnter(data) {
+            loadingEnter();
+        }
+      },
+    
+      {
+        namespace: 'gallery',
+        afterEnter(data) {
+            loadingEnter();
+            galleryEnter();
+        }
+      }
+    ]
+});
+
+// Scroll Animation //
+
+const tlServicesScroll = new gsap.timeline({
+    onUpdate : debugPercentage
 })
+
+function debugPercentage() {
+    console.log(tlServicesScroll.progress())
+}
+
+tlServicesScroll.fromTo('#main-services', {
+    x: '100%'
+}, {
+    x: 0
+})
+
+const serviceElement = document.querySelector('#main-services');
+
+let homeController = new ScrollMagic.Controller();
+
+let serviceScene = new ScrollMagic.Scene({
+    triggerElement: '#main-services',
+    triggerHook: 1,
+    duration: serviceElement.offsetHeight
+})
+
+.setTween(tlServicesScroll)
+.addIndicators()
+.addTo(homeController)
